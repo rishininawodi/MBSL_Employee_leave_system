@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add Employee</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+:root {
+    --brand-900: #073b4c;
+    --brand-700: #0b647f;
+    --brand-500: #118ab2;
+    --highlight: #ffd166;
+
+    /* FIXED missing colors */
+    --brand-blue: #118ab2;
+    --brand-blue-dark: #073b4c;
+    --brand-red: #ef476f;
+
+    --brand-ice: rgba(17, 138, 178, 0.1);
+
+    --surface: #f6fafc;
+    --text-main: #12313d;
+    --text-soft: #56717a;
+
+    --glass: rgba(255,255,255,0.08);
+    --card-shadow: 0 24px 60px rgba(7, 59, 76, 0.2);
+}
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+    color: var(--text-main);
+
+    background:
+        radial-gradient(circle at 85% 20%, rgba(17, 138, 178, 0.2), transparent 32%),
+        radial-gradient(circle at 20% 85%, rgba(255, 209, 102, 0.2), transparent 30%),
+        linear-gradient(115deg, #ecf7fb 0%, #ffffff 48%, #eef7fa 100%);
+}
+
+.page-wrap{
+    min-height:100vh;
+    width:calc(100% - 250px);
+    margin-left:250px;
+    padding:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+}
+
+.page-wrap::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(28,37,64,.30);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    pointer-events:none;
+}
+
+.page-wrap > .row{
+    width:100%;
+    position:relative;
+    z-index:1;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    background: linear-gradient(180deg,
+        var(--brand-900),
+        var(--brand-700),
+        var(--brand-500)
+    );
+
+    color: #fff;
+    padding: 25px 18px;
+}
+
+.logo-box{
+    text-align:center;
+    margin-bottom:35px;
+}
+
+.logo-box img{
+    width:70px;
+    background:#fff;
+    padding:8px;
+    border-radius:14px;
+}
+
+.logo-box h5{
+    margin-top:12px;
+    font-weight:700;
+}
+
+.sidebar a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: rgba(255,255,255,0.15);
+    transform: translateX(4px);
+}
+
+.sidebar a.active{
+    box-shadow:inset 3px 0 0 var(--highlight);
+}
+
+.form-card{
+    border:0;
+    border-radius:26px;
+    box-shadow:0 22px 60px rgba(30,40,58,.14);
+    min-height:auto;
+    border:1px solid rgba(255,255,255,.65);
+    transform:translateY(-8px);
+    backdrop-filter:blur(1px);
+}
+
+.section-title{
+    color:#1f2430;
+    font-weight:800;
+    letter-spacing:.4px;
+}
+
+.section-subtitle{
+    color:#7d8594;
+    line-height:1.55;
+    max-width:560px;
+}
+
+.form-header{
+    margin-bottom:18px;
+    padding-bottom:14px;
+    border-bottom:1px solid #e2e9fb;
+}
+
+.form-label{
+    font-size:.92rem;
+    letter-spacing:.2px;
+}
+
+.input-group-text{
+    background:var(--brand-ice);
+    color:var(--brand-blue);
+    border-right:0;
+    border-radius:14px 0 0 14px;
+    padding-left:15px;
+    padding-right:12px;
+}
+
+.form-control{
+    border-left:0;
+    padding:.95rem 1rem;
+    border-radius:0 14px 14px 0;
+    background:#fff;
+}
+
+.form-control:focus{
+    border-color:var(--brand-blue);
+    box-shadow:0 0 0 .2rem rgba(26,58,122,.14);
+}
+
+.input-group{
+    border-radius:14px;
+    box-shadow:0 3px 10px rgba(25,35,52,.05);
+}
+
+.input-group:focus-within{
+    box-shadow:0 10px 18px rgba(26,58,122,.16);
+}
+
+.save-btn {
+    background: linear-gradient(90deg,
+        var(--brand-900),
+        var(--brand-500),
+        var(--highlight)
+    );
+
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 14px;
+    box-shadow: 0 12px 22px rgba(7,59,76,0.25);
+    transition: 0.2s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+.input-group-text {
+    background: rgba(17, 138, 178, 0.1);
+    color: var(--brand-700);
+    border-radius: 12px 0 0 12px;
+}
+
+.form-control {
+    border-left: 0;
+    border-radius: 0 12px 12px 0;
+}
+
+.form-control:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 4px rgba(17,138,178,0.15);
+}
+.card.bg-primary {
+    background: linear-gradient(135deg, var(--brand-900), var(--brand-700)) !important;
+}
+
+.card.bg-success {
+    background: linear-gradient(135deg, var(--brand-700), var(--brand-500)) !important;
+}
+
+.card.bg-warning {
+    background: linear-gradient(135deg, var(--highlight), #ffb703) !important;
+    color: #1f2430 !important;
+}
+
+.card.bg-danger {
+    background: linear-gradient(135deg, #ef476f, #dc2626) !important;
+}
+
+.card.bg-info {
+    background: linear-gradient(135deg, var(--brand-500), #4fc3f7) !important;
+}
+
+
+.form-actions{
+    margin-top:8px;
+    padding-top:8px;
+}
+
+.full-height-row,
+.panel-stretch{
+    min-height:auto;
+}
+
+@media(max-width:992px){
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+
+    .page-wrap{
+        width:100%;
+        margin-left:0;
+        padding:14px;
+        display:block;
+    }
+
+    .page-wrap::before{
+        display:none;
+    }
+
+    .full-height-row,
+    .panel-stretch,
+    .form-card{
+        min-height:auto;
+    }
+
+    .form-header{
+        margin-bottom:14px;
+        padding-bottom:12px;
+    }
+}
+.card,
+.form-card,
+.chart-card,
+.card-box {
+    border-radius: 22px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(17, 138, 178, 0.15);
+    background: rgba(255,255,255,0.92);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="logo-box">
+        <img src="../assets/logo.png" alt="logo">
+        <h5>MBSL Admin</h5>
+    </div>
+
+    <!-- Fix this line below to say admin_dashboard.html instead of dashboard.html -->
+    <a href="admin_dashboard.html" ><i class="bi bi-grid me-2"></i>Dashboard</a>
+    
+    <!-- Remove active from Add Employee -->
+    <a href="add_employee.html" class="active"><i class="bi bi-person-plus me-2"></i>Add Employee</a>
+    
+    <a href="add_rp.html"><i class="bi bi-person-badge me-2"></i>Add Reporting Person</a>
+    <a href="manage_users.html"><i class="bi bi-people me-2"></i>Manage All Users</a>
+    <a href="view_leaves.html"><i class="bi bi-calendar-check me-2"></i>View Leave Requests</a>
+    <a href="reports.html"><i class="bi bi-bar-chart-line me-2"></i>Generate Reports</a>
+    <a href="../../backend/api/admin/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+</div>
+</div>
+    
+
+</div>
+
+<div class="container-fluid p-0 page-wrap">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10 col-xxl-9">
+
+            <div class="card form-card overflow-hidden">
+
+                <div class="row g-0 full-height-row">
+
+                    <div class="col-12 bg-white p-4 p-md-5 panel-stretch d-flex flex-column justify-content-center">
+
+                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap form-header">
+                            <div>
+                                <h3 class="section-title mb-2">New Employee Form</h3>
+                                <p class="section-subtitle mb-0">
+                                    Fill in the details below to add a new employee to the system.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ✅ FORM FIXED TO MATCH DB -->
+                        <form id="employeeForm">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Employee ID</label>
+                                <div class="input-group input-group-lg">
+        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+        <input class="form-control" id="employee_id" name="employee_id" placeholder="Enter employee ID (e.g., EMP001)" required>
+    </div>
+</div>
+
+                            <div class="row g-4">
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Full Name</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                        <input class="form-control" id="full_name" name="full_name" placeholder="Enter full name" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Email</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                                        <input class="form-control" id="email" name="email" type="email" placeholder="Enter email" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Department</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                        <input class="form-control" id="department" name="department" placeholder="Enter department" required>
+                                    </div>
+                                </div>
+
+                                <!-- NEW (DB FIELD) -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Position</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                                        <input class="form-control" id="position" name="position" placeholder="Enter position">
+                                    </div>
+                                </div>
+
+                                <!-- FIXED -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Reporting Person ID</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-diagram-3-fill"></i></span>
+                                        <input class="form-control" id="reporting_to" name="reporting_to" placeholder="Enter RP ID">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary">Password</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                        <input class="form-control" id="password" name="password" type="password" placeholder="Create password" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex gap-4 flex-wrap form-actions">
+                                    <button class="btn save-btn btn-lg rounded-4 px-5" type="submit">
+                                        <i class="bi bi-save2 me-2"></i>Save Employee
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary btn-lg rounded-4 px-5">
+                                        Reset
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <div id="message" class="mt-4"></div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+
+<script src="../assets/js/add_employee.js?v=2"></script>
+
+
+</body>
+</html>
