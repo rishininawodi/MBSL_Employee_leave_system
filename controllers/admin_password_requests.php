@@ -23,9 +23,13 @@ $roleStmt->execute();
 $roleResult = $roleStmt->get_result();
 $currentUser = $roleResult->fetch_assoc();
 
-if (!$currentUser || strtolower((string)$currentUser['role']) !== 'admin') {
+// Debug: check what role is stored
+$userRole = $currentUser ? trim(strtolower((string)$currentUser['role'])) : null;
+error_log("DEBUG: User $userId role check - stored role: '" . ($currentUser['role'] ?? 'NULL') . "' -> normalized: '$userRole'");
+
+if (!$currentUser || ($userRole !== 'admin' && $userRole !== 'administrator')) {
     http_response_code(403);
-    echo json_encode(["success" => false, "message" => "Forbidden"]);
+    echo json_encode(["success" => false, "message" => "Forbidden - Role: " . ($currentUser['role'] ?? 'NULL')]);
     exit;
 }
 

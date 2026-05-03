@@ -396,6 +396,133 @@ body::after {
     z-index: 1;
 }
 
+    .dashboard-section {
+        margin-top: 24px;
+    }
+
+    .section-card {
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(17, 138, 178, 0.12);
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(7, 59, 76, 0.12);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(17, 138, 178, 0.12);
+        background: linear-gradient(90deg, rgba(17, 138, 178, 0.08), rgba(255, 209, 102, 0.08));
+    }
+
+    .section-header h5 {
+        margin: 0;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    .section-subtitle {
+        color: var(--text-soft);
+        font-size: 0.88rem;
+    }
+
+    .section-body {
+        padding: 20px;
+    }
+
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .chart-box {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid rgba(17, 138, 178, 0.08);
+        padding: 18px;
+        min-height: 320px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .chart-box h6 {
+        margin: 0 0 14px;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .chart-wrap {
+        position: relative;
+        height: 240px;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 15px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffffff 0%, #f7fbfd 100%);
+        border: 1px solid rgba(17, 138, 178, 0.08);
+    }
+
+    .activity-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 5px;
+        background: linear-gradient(135deg, #118ab2, #06d6a0);
+        box-shadow: 0 0 0 4px rgba(17,138,178,0.12);
+        flex: 0 0 auto;
+    }
+
+    .activity-dot.pending { background: linear-gradient(135deg, #ffd166, #ff9f43); box-shadow: 0 0 0 4px rgba(255,209,102,0.16); }
+    .activity-dot.approved { background: linear-gradient(135deg, #06d6a0, #1dd1a1); box-shadow: 0 0 0 4px rgba(6,214,160,0.16); }
+    .activity-dot.rejected { background: linear-gradient(135deg, #ef476f, #d63031); box-shadow: 0 0 0 4px rgba(239,71,111,0.16); }
+
+    .activity-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .activity-title {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+
+    .activity-meta {
+        color: var(--text-soft);
+        font-size: 0.84rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .activity-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .activity-badge.pending { background: rgba(255,169,64,0.15); color: #ff9f43; }
+    .activity-badge.approved { background: rgba(6,214,160,0.15); color: #06d6a0; }
+    .activity-badge.rejected { background: rgba(239,71,111,0.15); color: #ef476f; }
+
 
 
 .trend.trend-up {
@@ -758,10 +885,10 @@ body::after {
         <h5>MBSL Employee</h5>
     </div>
     <a href="employee_dashboard.html" class="active"><i class="bi bi-grid me-2"></i>Dashboard</a>
-    <a href="apply_leave.html" id="applyLeaveLink"><i class="bi bi-calendar-plus me-2"></i>Apply Leave</a>
-    <a href="#my-leaves"><i class="bi bi-calendar-check me-2"></i>My Leave Requests</a>
-    <a href="#profile"><i class="bi bi-person me-2"></i>My Profile</a>
-    <a href="#change-pwd"><i class="bi bi-lock me-2"></i>Change Password</a>
+    <a href="apply_leave.html" id="applyLeaveLink"><i class="bi bi-calendar-plus me-2"></i>Apply for Leave</a>
+    <a href="employee_leave_requests.html"><i class="bi bi-calendar-check me-2"></i>Leave Requests</a>
+    <a href="#profile" id="sidebarProfileLink" style="cursor: pointer;"><i class="bi bi-person me-2"></i>Profile</a>
+    
     <a href="login.html"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
 </div>
 
@@ -782,6 +909,40 @@ body::after {
     <!-- ADVANCED LEAVE BALANCE CARDS -->
     <div class="metrics-row" id="leaveBalancesContainer">
         <!-- Populated by JS -->
+    </div>
+
+    <div class="dashboard-section section-card">
+        <div class="section-header">
+            <div>
+                <h5><i class="bi bi-graph-up-arrow me-2"></i>Advanced Insights</h5>
+                <div class="section-subtitle">Your leave requests and recent activity, updated from your own history.</div>
+            </div>
+            <div class="requests-badge" style="margin: 0;"><i class="bi bi-activity"></i> Live employee data</div>
+        </div>
+        <div class="section-body">
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <h6>Request Status</h6>
+                    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <h6>Leave Type Usage</h6>
+                    <div class="chart-wrap"><canvas id="leaveTypeChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section section-card">
+        <div class="section-header">
+            <div>
+                <h5><i class="bi bi-clock-history me-2"></i>Recent Activities</h5>
+                <div class="section-subtitle">Latest leave actions from your own requests.</div>
+            </div>
+        </div>
+        <div class="section-body">
+            <div id="recentActivitiesList" class="activity-list"></div>
+        </div>
     </div>
 
 </div>
@@ -908,5 +1069,5 @@ body::after {
 </style>
 
 <!-- SCRIPTS -->
-<script src="../assets/js/employee_dashboard.js"></script>
+<script src="../assets/js/employee_dashboard.js?v=20260503"></script>
 </body>

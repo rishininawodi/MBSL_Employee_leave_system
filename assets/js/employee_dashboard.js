@@ -2,15 +2,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const empName = document.getElementById('empName');
   const empAvatar = document.getElementById('empAvatar');
   const container = document.getElementById('leaveBalancesContainer');
+  const statusChartCanvas = document.getElementById('statusChart');
+  const leaveTypeChartCanvas = document.getElementById('leaveTypeChart');
+  const recentActivitiesList = document.getElementById('recentActivitiesList');
   const profileModal = document.getElementById('profileModal');
   const closeProfileModal = document.getElementById('closeProfileModal');
   const closeProfileModal2 = document.getElementById('closeProfileModal2');
 
   let currentUser = null;
+  let statusChart = null;
+  let leaveTypeChart = null;
 
   // Make avatar clickable to show profile
-  empAvatar.style.cursor = 'pointer';
-  empAvatar.addEventListener('click', showProfileModal);
+  if (empAvatar) {
+    empAvatar.style.cursor = 'pointer';
+    empAvatar.addEventListener('click', showProfileModal);
+  }
+
+  // Wire sidebar profile link
+  const sidebarProfileLink = document.getElementById('sidebarProfileLink');
+  if (sidebarProfileLink) {
+    sidebarProfileLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Sidebar profile clicked', currentUser);
+      showProfileModal();
+    });
+  } else {
+    console.log('Sidebar profile link not found');
+  }
 
   function showProfileModal() {
     if (!currentUser) return;
@@ -29,6 +48,156 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function closeModal() {
     profileModal.style.display = 'none';
+  }
+
+  function chartColors(index) {
+    const palette = [
+      '#1f8a70',
+      '#0f766e',
+      '#1d4ed8',
+      '#0b647f',
+      '#06d6a0',
+      '#ffd166'
+    ];
+    return palette[index % palette.length];
+  }
+
+  function normalizeLeaveType(typeName) {
+    return String(typeName || '').trim().toLowerCase();
+  }
+
+  function getLeaveTypeColor(typeName, fallbackIndex = 0) {
+    const normalized = normalizeLeaveType(typeName);
+    const map = {
+      'casual leave': '#1f8a70',
+      'medical leave': '#0f766e',
+      'annual leave': '#1d4ed8'
+    };
+    return map[normalized] || chartColors(fallbackIndex);
+  }
+
+  function renderRecentActivities(items) {
+    if (!recentActivitiesList) return;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      recentActivitiesList.innerHTML = `
+        <div class="empty-state" style="padding: 20px 10px;">
+          <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+          <h4 style="color: var(--text-main); font-weight: 700; margin-bottom: 8px;">No recent activity</h4>
+          <p style="margin: 0;">Your leave actions will appear here.</p>
+        </div>
+      `;
+      return;
+    }
+
+    recentActivitiesList.innerHTML = items.map((item) => {
+      const status = String(item.status || 'Pending').toLowerCase();
+      const dotClass = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending';
+      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      const when = item.updated_date || item.applied_date || '';
+
+      return `
+        <div class="activity-item">
+          <div class="activity-dot ${dotClass}"></div>
+          <div class="activity-main">
+            <div class="activity-title">${item.leave_type || 'Leave Request'} • ${statusLabel}</div>
+            <div class="activity-meta">
+              <span>${item.from_date} to ${item.to_date}</span>
+              <span>${item.total_days} day(s)</span>
+              <span>${when ? new Date(when).toLocaleString() : '—'}</span>
+            </div>
+          </div>
+          <div class="activity-badge ${dotClass}">${statusLabel}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCharts(statusCounts, typeData) {
+    if (statusChartCanvas) {
+      const ctx = statusChartCanvas.getContext('2d');
+      if (statusChart) statusChart.destroy();
+      statusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pending', 'Approved', 'Rejected'],
+          datasets: [{
+            data: [statusCounts.pending || 0, statusCounts.approved || 0, statusCounts.rejected || 0],
+            backgroundColor: ['#ffd166', '#06d6a0', '#ef476f'],
+            borderWidth: 0,
+            hoverOffset: 10,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                padding: 18,
+                color: '#12313d',
+                font: { weight: '600' }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (leaveTypeChartCanvas) {
+      const ctx = leaveTypeChartCanvas.getContext('2d');
+      if (leaveTypeChart) leaveTypeChart.destroy();
+      const typeLabels = (typeData || []).map((row) => row.leave_type || 'Leave Type');
+      const typeCounts = (typeData || []).map((row) => Number(row.request_count || 0));
+      leaveTypeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: typeLabels,
+          datasets: [{
+            label: 'Request Count',
+            data: typeCounts,
+            backgroundColor: (typeData || []).map((row, index) => getLeaveTypeColor(row.leave_type, index)),
+            borderRadius: 10,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const totalDays = (typeData || [])[context.dataIndex]?.days_used || 0;
+                  return ` Requests: ${context.parsed.y} | Days: ${totalDays}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#56717a',
+                callback(value, index) {
+                  const label = typeLabels[index] || '';
+                  const count = typeCounts[index] || 0;
+                  return `${label} (${count})`;
+                }
+              },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#56717a', precision: 0 },
+              grid: { color: 'rgba(17, 138, 178, 0.08)' }
+            }
+          }
+        }
+      });
+    }
   }
 
   closeProfileModal.addEventListener('click', closeModal);
@@ -76,7 +245,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await fetch('/MBSL_Employee_leave_system/controllers/update_profile.php', {
         method: 'POST',
-        body: fd
+        body: fd,
+        credentials: 'same-origin'
       });
       const payload = await res.json();
       if (!payload.success) throw new Error(payload.message || 'Update failed');
@@ -259,7 +429,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       fetch('/MBSL_Employee_leave_system/controllers/set_new_password.php', {
         method: 'POST',
-        body: fd
+        body: fd,
+        credentials: 'same-origin'
       })
       .then(res => res.json())
       .then(payload => {
@@ -299,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Verify all elements exist
   if (!applyLeaveModal || !applyLeaveForm) {
-    console.error('✗ Leave form elements not found');
+    // This script is reused on pages that do not contain the leave form.
   } else {
     console.log('✓ Leave form elements found');
   }
@@ -453,7 +624,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     // Fetch employee info and leave balances
     const res = await fetch('/MBSL_Employee_leave_system/controllers/employee_info.php', {
-      credentials: 'same-origin'
+      credentials: 'same-origin',
+      cache: 'no-store'
     });
     if (!res.ok) {
       console.error('Network error');
@@ -473,9 +645,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update header
     if (user && user.full_name) {
-      empName.textContent = user.full_name;
-      const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
-      empAvatar.textContent = initials || 'E';
+      if (empName) {
+        empName.textContent = user.full_name;
+      }
+      if (empAvatar) {
+        const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+        empAvatar.textContent = initials || 'E';
+      }
+    }
+
+    const statsRes = await fetch('/MBSL_Employee_leave_system/controllers/employee_dashboard_stats.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    if (statsRes.ok) {
+      const statsPayload = await statsRes.json();
+      if (statsPayload.success) {
+        renderCharts(statsPayload.status_counts || {}, statsPayload.type_data || []);
+        renderRecentActivities(statsPayload.recent_requests || []);
+      }
     }
 
     // Clear and populate leave balance cards
@@ -499,20 +687,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Color schemes for cards
-    const colors = [
-      { bg: 'linear-gradient(135deg, #06d6a0 0%, #1dd1a1 50%, #10ac84 100%)', label: 'Casual Leave' },
-      { bg: 'linear-gradient(135deg, #0ea5a4 0%, #0d9488 50%, #0f766e 100%)', label: 'Medical Leave' },
-      { bg: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1e40af 100%)', label: 'Annual Leave' }
-    ];
-
     balances.forEach((balance, idx) => {
-      const colorScheme = colors[idx % colors.length];
+      const colorScheme = {
+        Casual: 'linear-gradient(135deg, #1f8a70 0%, #1b7d66 50%, #136f5a 100%)',
+        Medical: 'linear-gradient(135deg, #0f766e 0%, #0b647f 50%, #084c61 100%)',
+        Annual: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #1e40af 100%)'
+      };
+      const typeName = normalizeLeaveType(balance.type_name);
+      const cardBg = typeName.includes('casual')
+        ? colorScheme.Casual
+        : typeName.includes('medical')
+          ? colorScheme.Medical
+          : typeName.includes('annual')
+            ? colorScheme.Annual
+            : `linear-gradient(135deg, ${chartColors(idx)} 0%, ${chartColors(idx + 1)} 50%, ${chartColors(idx + 2)} 100%)`;
       const percent = balance.total > 0 ? (balance.remaining / balance.total) * 100 : 0;
 
       const card = document.createElement('div');
       card.className = 'metric-card';
-      card.style.background = colorScheme.bg;
+      card.style.background = cardBg;
       card.innerHTML = `
         <div class="metric-header">
           <div class="metric-label">${balance.type_name}</div>

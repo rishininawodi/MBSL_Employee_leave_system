@@ -11,7 +11,7 @@ if (!$userId) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT full_name FROM users WHERE id = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT full_name, role FROM users WHERE id = ? LIMIT 1");
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => "Database query failed", "error" => $conn->error]);
@@ -26,6 +26,13 @@ $user = $result->fetch_assoc();
 if (!$user) {
     http_response_code(404);
     echo json_encode(["success" => false, "message" => "Admin not found"]);
+    exit;
+}
+
+$role = trim(strtolower((string)($user['role'] ?? '')));
+if ($role !== 'admin' && $role !== 'administrator') {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => "Forbidden"]);
     exit;
 }
 

@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(
                 '/MBSL_Employee_leave_system/controllers/get_admin_info.php',
-                { cache: 'no-store' }
+                { cache: 'no-store', credentials: 'same-origin' }
             );
 
             const data = await response.json();
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             for (const endpoint of endpoints) {
                 try {
-                    const res = await fetch(endpoint, { cache: 'no-store' });
+                    const res = await fetch(endpoint, { cache: 'no-store', credentials: 'same-origin' });
                     const text = await res.text();
 
                     if (!res.ok) {
@@ -434,7 +434,7 @@ const chartShadowPlugin = {
     // LOAD DASHBOARD COUNTS + CHARTS
     // ==============================
     function loadDashboardCounts() {
-        fetch("/MBSL_Employee_leave_system/controllers/dashboard_counts.php")
+        fetch("/MBSL_Employee_leave_system/controllers/dashboard_counts.php", { credentials: 'same-origin', cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
 

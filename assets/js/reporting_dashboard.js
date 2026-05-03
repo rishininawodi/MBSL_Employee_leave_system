@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeProfileModal = document.getElementById('closeProfileModal');
   const profileContent = document.getElementById('profileContent');
   const rpAvatar = document.getElementById('rpAvatar');
+  const rpName = document.getElementById('rpName');
 
   let currentFilter = 'pending';
   let allRequests = [];
@@ -119,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function showProfile() {
     try {
       const res = await fetch('/MBSL_Employee_leave_system/controllers/employee_info.php', {
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        cache: 'no-store'
       });
       const data = await res.json();
       
@@ -354,12 +356,16 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadProfile() {
     try {
       const res = await fetch('/MBSL_Employee_leave_system/controllers/employee_info.php', {
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        cache: 'no-store'
       });
       const data = await res.json();
       
       if (data.success && data.user) {
         const user = data.user;
+        if (rpName && user.full_name) {
+          rpName.textContent = user.full_name;
+        }
         if (rpAvatar) {
           rpAvatar.textContent = user.full_name ? user.full_name.charAt(0).toUpperCase() : 'RP';
         }
